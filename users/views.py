@@ -57,8 +57,6 @@ def login_view(request: HttpRequest) -> HttpResponse:
             messages.success(request, "Sesión iniciada")
             login(request, user)
             return redirect("home")
-        else:
-            messages.error(request, "Error al iniciar Sesión")
     else:
         form = AuthenticationForm()
 
@@ -79,5 +77,5 @@ def logout_view(request: HttpRequest) -> HttpResponse:
         HttpResponse: Redirect to home page after logout.
     """
     logout(request)
-    messages.info("Sesión cerrada")
+    messages.info(request, "Sesión cerrada")
     return redirect("home")
