@@ -1,11 +1,16 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from typing import Set, List
+from typing import Set, List, Type
 from .models import Book, Favorite
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.db.models import QuerySet
+from .utils import get_book_data_from_api
+
+
+from rest_framework import viewsets, permissions
+from .serializers import BookSerializer
 
 
 # Create your views here.
@@ -57,8 +62,11 @@ def book_detail(request: HttpRequest, book_id: int) -> HttpResponse:
         requested book object. Raises Http404 if the book does not exist.
     """
     book: Book = get_object_or_404(Book, id=book_id)
+    external_data = get_book_data_from_api(book.title)
 
-    return render(request, "books/details.html", {"book": book})
+    context = {"book": book, "external_data": external_data}
+
+    return render(request, "books/details.html", context)
 
 
 @login_required
@@ -103,3 +111,42 @@ def favorites_books_view(request: HttpRequest) -> HttpResponse:
     return render(
         request, "books/favorites_books.html", {"favorites_books": favorites_books}
     )
+
+
+class BookViewSet(viewsets.ModelViewSet):
+    """
+    API Endpoint that allows books to be viewed or edited.
+
+    This ViewSet automatically provides `list`, `create`, `retrieve`,
+    `update` and `destroy` actions.
+
+    Attributes:
+        queryset (QuerySet): The list of all books, ordered by publication date.
+        serializer_class (BookSerializer): The serializer class used to convert
+                                           Book instances to JSON.
+    """
+
+    queryset: QuerySet[Book] = Book.objects.all().order_by("publication_date")
+    serializer_class: Type[BookSerializer] = BookSerializer
+
+    def get_permissions(self) -> List[permissions.BasePermission]:
+        """
+        Instantiates and returns the list of permissions that this view requires.
+
+        - For 'list' and 'retrieve' actions (GET): Allows access to any user (AllowAny).
+        - For 'create', 'update', and 'destroy' actions: Requires the user to be an
+          administrator (IsAdminUser).
+
+        Returns:
+            List[permissions.BasePermission]: A list of permission instances.
+        """
+        if self.action in ["list", "retrieve"]:
+            permission_classes: List[Type[permissions.BasePermission]] = [
+                permissions.AllowAny
+            ]
+        else:
+            permission_classes: List[Type[permissions.BasePermission]] = [
+                permissions.IsAdminUser
+            ]
+
+        return [permission() for permission in permission_classes]

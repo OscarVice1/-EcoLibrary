@@ -24,7 +24,7 @@
             <a href="{%url 'details' favorite_book.book.id%}">Ver detalles</a>
             <form action="{% url 'toggle_favorite' favorite_book.book.id%}" method="post" class="mt-2">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-danger btn-sm">Anular Inscripción</button>
+                <button type="submit" class="btn btn-danger btn-sm">Borrar de favoritos</button>
             </form>
         </div>
         {% endfor %}
