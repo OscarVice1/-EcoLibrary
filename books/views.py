@@ -11,7 +11,7 @@ from django.db.models import QuerySet
 def home(request: HttpRequest) -> HttpResponse:
     """
     Render the home page with a list of all books.
-    
+
     Args:
         request (HttpRequest): The incoming HTTP request.
 
@@ -41,4 +41,5 @@ def book_detail(request: HttpRequest, book_id: int) -> HttpResponse:
     return render(request, "books/details.html", {"book": book})
 
 
-def add_book_favorite()
+def add_book_favorite():
+    pass
